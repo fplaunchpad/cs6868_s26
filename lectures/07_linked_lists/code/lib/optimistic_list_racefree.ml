@@ -43,12 +43,11 @@ let create () =
 *)
 let validate head pred curr =
   let rec loop node =
-    if node.key <= pred.key then
-      if node == pred then
-        let pred_next = Atomic.Loc.get [%atomic.loc pred.next] in
-        pred_next == curr
-      else
-        loop (Atomic.Loc.get [%atomic.loc node.next])
+    if node == pred then
+      let pred_next = Atomic.Loc.get [%atomic.loc pred.next] in
+      pred_next == curr
+    else if node.key < pred.key then
+      loop (Atomic.Loc.get [%atomic.loc node.next])
     else
       false
   in

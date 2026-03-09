@@ -35,11 +35,10 @@ let create () =
 *)
 let validate head pred curr =
   let rec loop node =
-    if node.key <= pred.key then
-      if node == pred then
-        pred.next == curr
-      else
-        loop node.next
+    if node == pred then
+      pred.next == curr
+    else if node.key < pred.key then
+      loop node.next
     else
       false
   in

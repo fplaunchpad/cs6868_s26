@@ -19,7 +19,7 @@ type 'a t = {
 (** Create a new empty list with sentinel nodes *)
 let create () =
   let rec head = { item = None; key = min_int; next = tail }
-  and tail = { item = None; key = max_int; next = tail } in
+  and tail = { item = None; key = max_int; next = tail } in (* XXX KC: trick *)
   { head }
 
 (** Add an element to the list *)
