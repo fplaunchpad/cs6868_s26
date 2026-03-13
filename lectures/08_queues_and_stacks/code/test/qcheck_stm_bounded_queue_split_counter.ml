@@ -26,7 +26,7 @@ module Spec = struct
   let arb_cmd _s =
     let int_gen = Gen.small_nat in
     QCheck.make ~print:show_cmd
-      (Gen.frequency [
+      (Gen.oneof_weighted [
         (3, Gen.map (fun i -> Try_enq i) int_gen);
         (3, Gen.map (fun _ -> Try_deq) int_gen);
       ])

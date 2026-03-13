@@ -43,7 +43,7 @@ module Spec = struct
   let producer_cmd _s =
     let int_gen = Gen.nat in
     QCheck.make ~print:show_cmd
-      (Gen.frequency [
+      (Gen.oneof_weighted [
         (8, Gen.map (fun i -> Enq i) int_gen);
         (1, Gen.return Size);
       ])

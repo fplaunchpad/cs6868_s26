@@ -40,7 +40,7 @@ module Spec = struct
   let arb_cmd _s =
     let int_gen = Gen.small_nat in
     QCheck.make ~print:show_cmd
-      (Gen.frequency [
+      (Gen.oneof_weighted [
         (3, Gen.map (fun i -> Add i) int_gen);
         (2, Gen.map (fun i -> Remove i) int_gen);
         (5, Gen.map (fun i -> Contains i) int_gen);  (* More contains - it's wait-free! *)
