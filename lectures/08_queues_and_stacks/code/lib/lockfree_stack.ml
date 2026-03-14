@@ -72,27 +72,36 @@ let push s x =
   in
   loop ()
 
-(** [try_pop s] removes and returns [Some v] where [v] is the top
-    element, or [None] if the stack is empty.  Lock-free with backoff. *)
-let try_pop s =
+(** [try_pop_node s] is a single CAS attempt (textbook [tryPop], Fig 11.4).
+    @raise Empty if the stack is empty.
+    Returns [Some v] on CAS success, [None] on CAS failure (contention). *)
+let try_pop_node s =
+  let old_top = AL.get [%atomic.loc s.top] in
+  match old_top with
+  | None -> raise Empty
+  | Some node ->
+    if AL.compare_and_set [%atomic.loc s.top] old_top node.next then
+      Some node.value
+    else
+      None
+
+(** [pop s] removes and returns the top element (textbook [pop], Fig 11.4).
+    Spins calling [try_pop_node] with exponential backoff on CAS failure.
+    @raise Empty if the stack is empty. *)
+let pop s =
   let backoff = Backoff.create () in
   let rec loop () =
-    let old_top = AL.get [%atomic.loc s.top] in
-    match old_top with
-    | None -> None
-    | Some node ->
-      if AL.compare_and_set [%atomic.loc s.top] old_top node.next then
-        Some node.value
-      else begin
-        Backoff.backoff backoff;
-        loop ()
-      end
+    match try_pop_node s with
+    | Some v -> v
+    | None ->
+      Backoff.backoff backoff;
+      loop ()
   in
   loop ()
 
-(** [pop s] removes and returns the top element.
-    @raise Empty if the stack is empty. *)
-let pop s =
-  match try_pop s with
-  | Some v -> v
-  | None -> raise Empty
+(** [try_pop s] removes and returns [Some v] where [v] is the top
+    element, or [None] if the stack is empty.  Lock-free with backoff. *)
+let try_pop s =
+  match pop s with
+  | v -> Some v
+  | exception Empty -> None
