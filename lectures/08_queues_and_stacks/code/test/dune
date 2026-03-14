@@ -28,3 +28,18 @@
  (modules qcheck_stm_bounded_queue_split_counter)
  (libraries bounded_queue_split_counter qcheck-stm.sequential qcheck-stm.domain qcheck-multicoretests-util))
 
+(executable
+ (name test_lockfree_queue)
+ (modules test_lockfree_queue)
+ (libraries lockfree_queue unix))
+
+(executable
+ (name qcheck_lin_lockfree_queue)
+ (modules qcheck_lin_lockfree_queue)
+ (libraries lockfree_queue qcheck-lin.domain))
+
+(executable
+ (name qcheck_stm_lockfree_queue)
+ (modules qcheck_stm_lockfree_queue)
+ (libraries lockfree_queue qcheck-stm.sequential qcheck-stm.domain qcheck-multicoretests-util))
+

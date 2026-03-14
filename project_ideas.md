@@ -276,3 +276,100 @@ reader-writer locks and seqlocks at high reader concurrency?
 - RCU: <https://en.wikipedia.org/wiki/Read-copy-update>
 - P. McKenney, J. Walpole, "Introducing Technology into the Linux Kernel," *Linux Symposium*, 2006
 - AoMPP Chapter 8
+
+---
+
+## Project 7: Systematic Concurrency Testing with Dscheck
+
+### Background
+
+Testing concurrent data structures with random scheduling (as in QCheck-Lin) is
+effective but inherently incomplete — rare interleavings may never be explored.
+**Dscheck** is a model checker for OCaml 5 that systematically enumerates all
+possible thread interleavings of a test, guaranteeing that if a bug exists within
+the test's scope, it will be found. Dscheck operates by intercepting `Atomic`
+operations and controlling the scheduler, making it a powerful complement to
+property-based testing. This project applies dscheck to the concurrent data
+structures studied throughout the course.
+
+### Tasks
+
+1. Write **dscheck tests** for at least four concurrent data structures or
+   synchronisation primitives covered in class, for example:
+   - Spin locks (TAS, TTAS, Backoff, ALock) from Lecture 05
+   - The atomic snapshot from Assignment 2
+   - Fine-grained and lock-free linked lists from Lecture 07
+   - The lock-free stack or queue from Lecture 08
+2. For each data structure, design minimal test scenarios (2–3 threads, small
+   state) that capture the key correctness properties (mutual exclusion,
+   linearizability, absence of lost updates). Document why each scenario is
+   sufficient to exercise the interesting interleavings.
+3. Compare **dscheck** with **QCheck-Lin**: for each data structure, report
+   (a) whether dscheck finds bugs that QCheck-Lin misses (or vice versa),
+   (b) the number of interleavings explored, and (c) wall-clock time to
+   exhaustively check the scenario.
+4. Introduce **seeded bugs** (e.g., weaken a `compare_and_set` to a plain
+   store, remove a fence) and verify that dscheck reliably detects them.
+
+### Research Question
+
+How does systematic interleaving enumeration (dscheck) compare with randomised
+linearizability testing (QCheck-Lin) in terms of bug-finding ability, test
+authoring effort, and scalability to larger thread counts and state spaces?
+
+### References
+
+- Dscheck: <https://github.com/ocaml-multicore/dscheck>
+- QCheck-Lin / QCheck-STM: <https://github.com/ocaml-multicore/multicoretests>
+- AoMPP Chapters 3, 7, 9
+
+---
+
+## Project 8: Parking-Lot Based Mutex — When Blocking Beats Spinning
+
+### Background
+
+Lecture 05 studied several spin lock designs (TAS, TTAS, Backoff, ALock) that
+keep waiting threads spinning on shared memory. Spinning is cheap when critical
+sections are short and contention is low, but under sustained contention it
+wastes CPU cycles, generates cache-coherence traffic, and starves other threads
+of resources. The **parking lot** approach, popularised by WebKit and Rust's
+`parking_lot` crate, takes the opposite stance: waiting threads **park**
+(block via the OS scheduler) rather than spin, and are **unparked** (woken)
+when the lock becomes available. A global hash table maps lock addresses to
+wait queues, so the mutex itself is only one byte wide. This design has been
+shown to outperform both spin locks and traditional OS mutexes in many workloads,
+challenging the conventional wisdom that spinning is always faster for short
+critical sections.
+
+### Tasks
+
+1. Implement a **parking-lot mutex** in OCaml 5. Use `Atomic` for the lock
+   state and OCaml 5 domains or `Condition`/`Mutex` from the stdlib to
+   implement the park/unpark mechanism. The lock word should encode at least
+   two bits of state: *locked* and *has-waiters*.
+2. Implement a **global hash table of wait queues** (the "parking lot") that
+   maps lock addresses to FIFO wait lists. Protect each bucket with a
+   short-held stdlib `Mutex` — this is the kernel of the design.
+3. Verify mutual exclusion using **QCheck-Lin**: wrap a shared counter and
+   check that concurrent increments are linearizable.
+4. Run **TSAN** to confirm the implementation is race-free.
+5. Benchmark against: (a) the spin locks from Lecture 05 (TAS, TTAS, Backoff,
+   ALock), (b) the stdlib `Mutex`, and (c) if time permits, the CLH/MCS locks
+   from Project 1. Measure throughput (ops/sec) and tail latency across 1–8
+   threads under three contention profiles:
+   - **Low contention** — short critical section, few threads
+   - **High contention** — short critical section, many threads
+   - **Long critical section** — simulate I/O or allocation inside the lock
+
+### Research Question
+
+Does a parking-lot mutex that blocks waiting threads outperform spin locks and
+the OCaml stdlib `Mutex` under high contention and longer critical sections,
+and at what contention level does blocking start to win over spinning?
+
+### References
+
+- parking_lot crate: <https://crates.io/crates/parking_lot>
+- A. Matklad, "Mutexes Are Faster Than Spinlocks," 2020: <https://matklad.github.io/2020/01/04/mutexes-are-faster-than-spinlocks.html>
+- AoMPP Chapter 7 (Spin Locks and Contention)
