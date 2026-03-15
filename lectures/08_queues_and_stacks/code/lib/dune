@@ -17,3 +17,17 @@
 (library
  (name lockfree_stack_builtin_list)
  (modules lockfree_stack_builtin_list))
+
+(library
+ (name lockfree_exchanger)
+ (modules lockfree_exchanger))
+
+(library
+ (name elimination_array)
+ (modules elimination_array)
+ (libraries lockfree_exchanger))
+
+(library
+ (name elimination_backoff_stack)
+ (modules elimination_backoff_stack)
+ (libraries elimination_array))

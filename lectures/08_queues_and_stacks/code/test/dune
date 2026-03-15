@@ -73,3 +73,23 @@
  (modules qcheck_stm_lockfree_stack_builtin_list)
  (libraries lockfree_stack_builtin_list qcheck-stm.sequential qcheck-stm.domain qcheck-multicoretests-util))
 
+(executable
+ (name test_elimination_backoff_stack)
+ (modules test_elimination_backoff_stack)
+ (libraries elimination_backoff_stack unix))
+
+(executable
+ (name qcheck_lin_elimination_backoff_stack)
+ (modules qcheck_lin_elimination_backoff_stack)
+ (libraries elimination_backoff_stack qcheck-lin.domain))
+
+(executable
+ (name qcheck_stm_elimination_backoff_stack)
+ (modules qcheck_stm_elimination_backoff_stack)
+ (libraries elimination_backoff_stack qcheck-stm.sequential qcheck-stm.domain qcheck-multicoretests-util))
+
+(executable
+ (name benchmark_stacks)
+ (modules benchmark_stacks)
+ (libraries lockfree_stack_builtin_list elimination_backoff_stack unix))
+
