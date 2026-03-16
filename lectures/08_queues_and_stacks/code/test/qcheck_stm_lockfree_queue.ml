@@ -30,7 +30,7 @@ module Spec = struct
   type sut = int LFQ.t
 
   let arb_cmd _s =
-    let int_gen = Gen.small_nat in
+    let int_gen = Gen.nat_small in
     QCheck.make ~print:show_cmd
       (Gen.oneof_weighted [
         (3, Gen.map (fun i -> Enq i) int_gen);
