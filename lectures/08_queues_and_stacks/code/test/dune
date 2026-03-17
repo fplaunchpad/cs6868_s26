@@ -93,3 +93,8 @@
  (modules benchmark_stacks)
  (libraries lockfree_stack_builtin_list elimination_backoff_stack unix))
 
+(executable
+ (name benchmark_queues)
+ (modules benchmark_queues)
+ (libraries bounded_queue bounded_queue_split_counter lockfree_queue unix))
+

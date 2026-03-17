@@ -31,6 +31,7 @@ Each implementation has up to three levels of testing:
 ### Benchmarks (`test/`)
 
 - **`benchmark_stacks.ml`** — Throughput comparison: Treiber stack vs elimination backoff stack under increasing thread counts
+- **`benchmark_queues.ml`** — Throughput comparison: bounded queue vs split-counter bounded queue vs lock-free (Michael-Scott) queue. Capacity is set to total items so the bounded queues never block on fullness, giving a fair comparison with the unbounded lock-free queue
 
 ## Key Design Choices (OCaml vs Java)
 
@@ -69,9 +70,11 @@ dune exec test/qcheck_stm_lockfree_stack.exe -- all
 dune exec test/qcheck_stm_elimination_backoff_stack.exe -- all
 dune exec test/qcheck_stm_lockfree_queue.exe -- all
 
-# Run benchmark
+# Run benchmarks
 dune exec test/benchmark_stacks.exe
 dune exec test/benchmark_stacks.exe -- --ops 200000 --max-threads 8 --runs 5
+dune exec test/benchmark_queues.exe
+dune exec test/benchmark_queues.exe -- --ops 200000 --max-threads 8 --runs 5
 ```
 
 ## Project Structure
@@ -92,7 +95,8 @@ code/
 │   ├── test_*.ml                           # Unit tests
 │   ├── qcheck_lin_*.ml                     # Linearizability tests
 │   ├── qcheck_stm_*.ml                     # State-machine tests
-│   ├── benchmark_stacks.ml                 # Throughput benchmark
+│   ├── benchmark_stacks.ml                 # Stack throughput benchmark
+│   ├── benchmark_queues.ml                 # Queue throughput benchmark
 │   └── dune
 └── README.md
 ```

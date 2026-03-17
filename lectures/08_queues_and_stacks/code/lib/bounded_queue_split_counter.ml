@@ -30,15 +30,15 @@ type 'a node = {
 
 (** The bounded queue type with split counters *)
 type 'a t = {
-  mutable head : 'a node;    (** Sentinel node; head.next is the first real element *)
-  mutable tail : 'a node;    (** Last node in the queue *)
-  capacity : int;             (** Maximum number of elements *)
-  mutable enq_side_size : int;    (** Enqueue-side counter (>= 0), protected by enq_lock *)
-  mutable deq_side_size : int;    (** Dequeue-side counter (<= 0), protected by deq_lock *)
-  enq_lock : Mutex.t;         (** Lock for enqueuers *)
-  deq_lock : Mutex.t;         (** Lock for dequeuers *)
-  not_full : Condition.t;     (** Signalled when queue is no longer full *)
-  not_empty : Condition.t;    (** Signalled when queue is no longer empty *)
+  mutable head : 'a node;      (** Sentinel node; head.next is the first real element *)
+  mutable tail : 'a node;      (** Last node in the queue *)
+  capacity : int;              (** Maximum number of elements *)
+  mutable enq_side_size : int; (** Enqueue-side counter, range [0, capacity]. Protected by enq_lock. *)
+  mutable deq_side_size : int; (** Dequeue-side counter, range [-capacity, 0]. Protected by deq_lock. *)
+  enq_lock : Mutex.t;          (** Lock for enqueuers *)
+  deq_lock : Mutex.t;          (** Lock for dequeuers *)
+  not_full : Condition.t;      (** Signalled when queue is no longer full *)
+  not_empty : Condition.t;     (** Signalled when queue is no longer empty *)
 }
 
 let create capacity =
