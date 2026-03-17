@@ -20,8 +20,9 @@
 (** A node in the linked list backing the queue *)
 type 'a node = {
   value : 'a;
-  mutable next : 'a node option;
+  mutable next : 'a node option [@atomic];
 }
+
 
 (** The bounded queue type *)
 type 'a t = {
@@ -56,7 +57,7 @@ let enq q x =
       Condition.wait q.not_full q.enq_lock
     done;
     let node = { value = x; next = None } in
-    q.tail.next <- Some node;
+    Atomic.Loc.set [%atomic.loc q.tail.next] (Some node);
     (* Note: the new node is reachable from head and can be dequeued
        before the tail pointer is updated below. *)
     q.tail <- node;
@@ -100,8 +101,7 @@ let try_enq q x =
   let must_wake_dequeuers, success = Fun.protect ~finally:(fun () -> Mutex.unlock q.enq_lock) (fun () ->
     if Atomic.get q.size < q.capacity then begin
       let node = { value = x; next = None } in
-      q.tail.next <- Some node;
-      (* Note: [node] can be dequeued at this point!! *)
+      Atomic.Loc.set [%atomic.loc q.tail.next] (Some node);
       q.tail <- node;
       (Atomic.fetch_and_add q.size 1 = 0, true)
     end else

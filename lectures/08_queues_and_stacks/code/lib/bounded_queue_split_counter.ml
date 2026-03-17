@@ -25,7 +25,7 @@
 (** A node in the linked list backing the queue *)
 type 'a node = {
   value : 'a;
-  mutable next : 'a node option;
+  mutable next : 'a node option [@atomic];
 }
 
 (** The bounded queue type with split counters *)
@@ -77,7 +77,7 @@ let enq q x =
         Condition.wait q.not_full q.enq_lock
     done;
     let node = { value = x; next = None } in
-    q.tail.next <- Some node;
+    Atomic.Loc.set [%atomic.loc q.tail.next] (Some node);
     q.tail <- node;
     let old = q.enq_side_size in
     q.enq_side_size <- old + 1;
