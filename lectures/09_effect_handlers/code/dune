@@ -1,0 +1,15 @@
+(executable
+ (name test1))
+
+(executable
+ (name test2))
+
+(executable
+ (name test3))
+
+(executable
+ (name test4))
+
+(executable
+ (name test5)
+ (ocamlopt_flags (:standard -w -38)))

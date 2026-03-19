@@ -15,8 +15,8 @@ banner_credit: "Photo © Madras Inherited"
 | 04       | Memory Consistency Models    | 12/02, 16/02, 17/02, 18/02               | 3.5             | * [OCaml Memory Model](https://ocaml.org/manual/5.4/memorymodel.html) <br/> * [You don't know jack about shared variables or memory models](https://dl.acm.org/doi/10.1145/2076450.2076465) |
 | 05       | Spinlocks and Contention     | 19/02, 23/02, 24/02                      | 3.0             | Chap 7 AMP         |
 | 06       | Monitors and Synchronization | 25/02, 26/02                             | 2.0             | Chap 8 AMP         |
-| 07       | Linked Lists                 | 02/03, 03/03, 09/03, 10/03, 11/03, 12/03, 16/03 | 6.5             | Chap 9 AMP         |
-| 08       | Queues and Stacks            | 16/03, 17/03, 18/03                             | 2.5             | Chap 10 & 11 AMP   |
+| 07       | Linked Lists                 | 02/03, 03/03, 09/03, 10/03, 11/03, 12/03, 16/03 | 6.5      | Chap 9 AMP         |
+| 08       | Queues and Stacks            | 16/03, 17/03, 18/03, 19/03               | 3.5             | Chap 10 & 11 AMP   |
 
 ## Quiz dates
 
