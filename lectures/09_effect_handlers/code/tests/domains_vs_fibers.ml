@@ -1,4 +1,4 @@
-open Sched
+open Sched_basic
 
 (* Benchmark: Domain spawn-join vs lightweight threads *)
 

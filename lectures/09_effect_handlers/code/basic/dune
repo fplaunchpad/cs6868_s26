@@ -1,0 +1,45 @@
+(executable
+ (name test1))
+
+(executable
+ (name test2))
+
+(executable
+ (name test3))
+
+(executable
+ (name test4))
+
+(executable
+ (name test5)
+ (flags (:standard -w -38)))
+
+(executable
+ (name test6)
+ (flags (:standard -w -38)))
+
+(executable
+ (name test7))
+
+(executable
+ (name test8))
+
+(executable
+ (name test9))
+
+(executable
+ (name exception)
+ (flags (:standard -w -21-33)))
+
+(executable
+ (name reader))
+
+(executable
+ (name state))
+
+(executable
+ (name nondeterminism)
+ (libraries multicont))
+
+(executable
+ (name tree_generator))

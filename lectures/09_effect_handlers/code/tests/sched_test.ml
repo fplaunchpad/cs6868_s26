@@ -1,4 +1,4 @@
-open Sched
+open Sched_basic
 
 let () =
   run (fun () ->

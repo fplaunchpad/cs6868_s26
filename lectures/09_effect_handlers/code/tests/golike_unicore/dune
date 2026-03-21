@@ -1,0 +1,11 @@
+(executable
+ (name ivar_test)
+ (libraries golike_unicore))
+
+(executable
+ (name promise_test)
+ (libraries golike_unicore))
+
+(executable
+ (name chan_test)
+ (libraries golike_unicore))
