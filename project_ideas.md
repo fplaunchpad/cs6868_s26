@@ -48,8 +48,8 @@ must be written in LaTeX, Markdown, or another open, machine-readable format.
 | Task | Date |
 |---|---|
 | Project topic approval | 30/03/2026 |
-| Report & code submission | 27/04/2026 |
-| Presentation | Week of 28/04/2026 |
+| Report & code submission | 26/04/2026 |
+| Presentation | Week of 27/04/2026 |
 
 Fill in your group members and chosen project topic in the
 [sign-up sheet](https://docs.google.com/spreadsheets/d/1kINa3ipNcyxAqh1wXC9_65xeZg25QFDirSUEqUU3IyA/edit?gid=0#gid=0)
