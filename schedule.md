@@ -16,7 +16,7 @@ banner_credit: "Photo © Madras Inherited"
 | 05       | Spinlocks and Contention     | 19/02, 23/02, 24/02                      | 3.0             | Chap 7 AMP         |
 | 06       | Monitors and Synchronization | 25/02, 26/02                             | 2.0             | Chap 8 AMP         |
 | 07       | Linked Lists                 | 02/03, 03/03, 09/03, 10/03, 11/03, 12/03, 16/03 | 6.5      | Chap 9 AMP         |
-| 08       | Queues and Stacks            | 16/03, 17/03, 18/03, 19/03               | 3.5             | Chap 10 & 11 AMP   |
+| 08       | Queues and Stacks            | 16/03, 17/03, 18/03, 19/03, 24/03, 25/03        | 5.5             | Chap 10 & 11 AMP   |
 
 ## Quiz dates
 

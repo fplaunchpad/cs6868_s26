@@ -18,5 +18,7 @@
    io_readable_test
    io_direct_test
    accept_test
-   echo_server)
+   echo_server
+   select_recv_timeout_test
+   timeout_loop_test)
  (libraries golike_multicore_select unix threads))

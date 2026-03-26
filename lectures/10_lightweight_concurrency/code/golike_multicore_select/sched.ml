@@ -69,9 +69,9 @@ let run ?(num_domains = Domain.recommended_domain_count ()) main =
         enqueue k
     | effect (Trigger.Await trigger), k ->
         if Trigger.on_signal trigger (fun () -> enqueue k) then
-          () (* callback registered; return to worker loop *)
+          ()
         else
-          Deep.continue k () (* already signaled — resume immediately *)
+          Deep.continue k ()
 
   and worker () =
     match dequeue () with

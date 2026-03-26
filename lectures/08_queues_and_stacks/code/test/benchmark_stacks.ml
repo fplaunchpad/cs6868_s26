@@ -80,29 +80,31 @@ let () =
     !ops !runs;
 
   Printf.printf "%-10s %14s %14s %10s\n%!"
-    "Threads" "Treiber(Kops)" "Elim(Kops)" "Speedup";
+    "Threads" "Treiber(Mops)" "Elim(Mops)" "Speedup";
   Printf.printf "%s\n%!" (String.make 52 '-');
 
   for threads = 1 to !max_threads do
     let total_ops = float_of_int (threads * !ops) in
 
     let treiber_times = List.init !runs (fun _ ->
-      benchmark_treiber threads !ops
+      let t = benchmark_treiber threads !ops in
+      Gc.full_major (); t
     ) in
     let treiber_tp = total_ops /. avg treiber_times in
 
     let elim_times = List.init !runs (fun _ ->
-      benchmark_elimination threads !ops
+      let t = benchmark_elimination threads !ops in
+      Gc.full_major (); t
     ) in
     let elim_tp = total_ops /. avg elim_times in
 
     let speedup = elim_tp /. treiber_tp in
 
-    Printf.printf "%-10d %13.0fK %13.0fK %9.2fx\n%!"
+    Printf.printf "%-10d %13.1fM %13.1fM %9.2fx\n%!"
       threads
-      (treiber_tp /. 1000.0)
-      (elim_tp /. 1000.0)
+      (treiber_tp /. 1e6)
+      (elim_tp /. 1e6)
       speedup
   done;
 
-  Printf.printf "\nThroughput in thousands of ops/sec. Speedup > 1 favours elimination.\n%!"
+  Printf.printf "\nThroughput in millions of ops/sec. Speedup > 1 favours elimination.\n%!"

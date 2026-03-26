@@ -5,15 +5,22 @@
     or timers expire.  Because the IO thread is a real OS thread, it
     can block in [Unix.select] without stalling the fiber scheduler.
 
-    When a fiber calls e.g. [Io.read fd buf pos len]:
-    1. It registers [fd] for read-readiness with the IO thread.
-    2. It suspends via [Trigger.await].
-    3. The IO thread's [Unix.select] reports [fd] ready → signals the trigger.
-    4. The fiber resumes and performs [Unix.read fd buf pos len] directly.
+    {b Precondition}: every [file_descr] passed to functions in this
+    module {b must} already be in non-blocking mode ([Unix.set_nonblock]
+    has been called on it).  All sockets returned by {!accept} are put
+    into non-blocking mode automatically.
 
-    There is a small window between the readiness notification and the
-    syscall during which readiness could become stale.  In practice
-    this is harmless for our single-reader-per-fd usage.
+    When a fiber calls e.g. [Io.read fd buf pos len]:
+    1. It attempts [Unix.read fd buf pos len] immediately.
+    2. If the call succeeds (data was already buffered) it returns at once.
+    3. If it raises [EAGAIN]/[EWOULDBLOCK], the fiber registers [fd] for
+       read-readiness with the IO thread and suspends via [Trigger.await].
+    4. The IO thread's [Unix.select] reports [fd] ready → signals the trigger.
+    5. The fiber resumes and retries the syscall from step 1.
+
+    The attempt-first pattern avoids an unnecessary suspend when data is
+    already available, and the retry loop is correct even if readiness
+    becomes stale between the notification and the syscall.
 
     A self-pipe (wakeup pipe) lets fiber-side registration poke the IO
     thread out of [Unix.select] so it picks up newly registered fds or
@@ -188,11 +195,35 @@ let rec io_loop wakeup_fd =
   Mutex.unlock st.mutex;
   io_loop wakeup_fd
 
-(** Lazily start the IO thread (double-checked lock on [st.started]). *)
+(** Lazily start the IO thread.
+    Uses the {b double-checked locking} pattern for one-time initialisation:
+
+    {[
+      if not (fast atomic check) then begin   (* 1st check — no lock *)
+        lock mutex;
+        if not (fast atomic check) then begin (* 2nd check — under lock *)
+          do_init ();
+          atomic_set flag true
+        end;
+        unlock mutex
+      end
+    ]}
+
+    - The first check (no lock) is the {e fast path}: once initialised, no
+      lock is ever acquired, making repeated calls to [ensure_started] cheap.
+    - The mutex serialises concurrent callers so [Thread.create] is called
+      exactly once.
+    - The second check is necessary: between the first check and acquiring
+      the lock, another thread may have already completed initialisation.
+    - The flag must be an {!Atomic.t} (or otherwise sequentially consistent)
+      so that the first check is not reordered or cached by the compiler or
+      hardware across the lock boundary.  A plain [ref bool] would be a data
+      race under the OCaml memory model. *)
 let ensure_started () =
   if not (Atomic.get st.started) then begin
     Mutex.lock st.mutex;
     if not (Atomic.get st.started) then begin
+      (* ^^ Double-check locking *)
       ignore (Thread.create io_loop st.wakeup_r : Thread.t);
       Atomic.set st.started true
     end;
@@ -242,26 +273,49 @@ let sleep delay =
   end
 
 let read fd buf pos len =
-  wait_readable fd;
-  Unix.read fd buf pos len
+  let rec loop () =
+    match Unix.read fd buf pos len with
+    | n -> n
+    | exception Unix.Unix_error ((Unix.EAGAIN | Unix.EWOULDBLOCK), _, _) ->
+        wait_readable fd; loop ()
+  in
+  loop ()
 
 let write fd buf pos len =
-  wait_writable fd;
-  Unix.write fd buf pos len
+  let rec loop () =
+    match Unix.write fd buf pos len with
+    | n -> n
+    | exception Unix.Unix_error ((Unix.EAGAIN | Unix.EWOULDBLOCK), _, _) ->
+        wait_writable fd; loop ()
+  in
+  loop ()
 
 let recv fd buf pos len flags =
-  wait_readable fd;
-  Unix.recv fd buf pos len flags
+  let rec loop () =
+    match Unix.recv fd buf pos len flags with
+    | n -> n
+    | exception Unix.Unix_error ((Unix.EAGAIN | Unix.EWOULDBLOCK), _, _) ->
+        wait_readable fd; loop ()
+  in
+  loop ()
 
 let send fd buf pos len flags =
-  wait_writable fd;
-  Unix.send fd buf pos len flags
+  let rec loop () =
+    match Unix.send fd buf pos len flags with
+    | n -> n
+    | exception Unix.Unix_error ((Unix.EAGAIN | Unix.EWOULDBLOCK), _, _) ->
+        wait_writable fd; loop ()
+  in
+  loop ()
 
 let accept fd =
-  wait_readable fd;
-  let cfd, addr = Unix.accept ~cloexec:true fd in
-  Unix.set_nonblock cfd;
-  (cfd, addr)
+  let rec loop () =
+    match Unix.accept ~cloexec:true fd with
+    | (cfd, addr) -> Unix.set_nonblock cfd; (cfd, addr)
+    | exception Unix.Unix_error ((Unix.EAGAIN | Unix.EWOULDBLOCK), _, _) ->
+        wait_readable fd; loop ()
+  in
+  loop ()
 
 let connect fd addr =
   try Unix.connect fd addr with
