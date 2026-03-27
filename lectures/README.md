@@ -1,8 +1,6 @@
----
-layout: page
-title: Lecture Summary
-permalink: /lecture-summary/
----
+# Lecture Summaries
+
+This page provides summaries of the lectures in CS6868, covering key concepts, algorithms, and implementations in concurrent programming using OCaml 5's multicore features and effect handlers. Each lecture builds on the previous ones, starting from fundamental principles of concurrency and progressing to advanced topics like lock-free data structures and lightweight concurrency libraries. The summaries highlight the main ideas, techniques, and OCaml code examples covered in each lecture, along with references to relevant chapters in the AMP textbook and other resources.
 
 ## Lecture 01: Introduction
 
