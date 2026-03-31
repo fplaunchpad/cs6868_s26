@@ -1,0 +1,29 @@
+; Library: batch bounded blocking queue implementation
+(library
+ (name batch_queue)
+ (wrapped false)
+ (modules BatchQueue)
+ (ocamlopt_flags (:standard -w -32))
+ (ocamlc_flags (:standard -w -32)))
+
+; Executable: manual concurrent tests
+(executable
+ (name test_manual)
+ (modules test_manual)
+ (ocamlopt_flags (:standard -w -21-32))
+ (ocamlc_flags (:standard -w -21-32))
+ (libraries batch_queue unix))
+
+; Executable: QCheck-Lin linearizability test
+(executable
+ (name qcheck_lin_batch_queue)
+ (modules qcheck_lin_batch_queue)
+ (libraries batch_queue qcheck-lin.domain))
+
+; Executable: QCheck-STM state machine test
+(executable
+ (name qcheck_stm_batch_queue)
+ (modules qcheck_stm_batch_queue)
+ (ocamlopt_flags (:standard -w -27))
+ (ocamlc_flags (:standard -w -27))
+ (libraries batch_queue qcheck-stm.domain qcheck-stm.sequential))
