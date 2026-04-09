@@ -68,8 +68,8 @@ let comp2 () =
   Printf.printf "initial: %d\n" (ISFn.get ());
   ISFn.set 42;
   Printf.printf "after set: %d\n" (ISFn.get ());
-  IS.set 100;
-  Printf.printf "after second set: %d\n" (IS.get ())
+  ISFn.set 100;
+  Printf.printf "after second set: %d\n" (ISFn.get ())
 
 let () =
   let final_state, () = ISFn.run 0 comp2 in
@@ -81,3 +81,13 @@ let () =
    after second set: 100
    final state: 100
 *)
+
+
+let () =
+    let final_state, value  = ISFn.run 0 (fun () ->
+                            let x = ISFn.get () in
+                            ISFn.set (x + 1);
+                            ISFn.get ()) in
+   Printf.printf "***************************\n";
+   Printf.printf "final state: %d\n" final_state;
+   Printf.printf "value : %d\n" value
