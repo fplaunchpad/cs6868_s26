@@ -20,6 +20,7 @@ preview/
 .DS_Store
 _build/
 _scratch/
+_refs/
 
 # Java compiled files
 *.class
