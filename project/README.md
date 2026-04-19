@@ -82,15 +82,14 @@ Put the video link prominently in your repository's top-level `README.md`.
 | Challenge of the problem undertaken | 3 | Ambition, novelty, relevance to course topics. Each project in `project_ideas.md` has a difficulty rating (★ to ★★★★★). **Higher-difficulty projects receive higher marks in this component even if completion is partial.** |
 | Progress made towards the challenge | 5 | Working implementation, depth of evaluation, evidence of effort |
 | Written report | 5 | Clarity, technical depth, proper evaluation, LLM reflection, contribution breakdown |
-| Presentation | 3 | Clear explanation, good use of the 10 minutes, ability to answer questions during Q&A |
+| Presentation | 3 | Clear explanation, good use of the 10 minutes, Q&A over Slack |
 
 ## Important Dates
 
 | Task | Date |
 |---|---|
 | Project topic approval | 30/03/2026 |
-| Report, code & video submission | 26/04/2026 |
-| Q&A | Week of 27/04/2026 |
+| Report, code & video submission | 29/04/2026 |
 
 Fill in your group members and chosen project topic in the
 [sign-up sheet](https://docs.google.com/spreadsheets/d/1kINa3ipNcyxAqh1wXC9_65xeZg25QFDirSUEqUU3IyA/edit?gid=0#gid=0)

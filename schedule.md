@@ -18,17 +18,22 @@ banner_credit: "Photo © Madras Inherited"
 | 07       | [Linked Lists]({{site.baseurl}}/lectures/07_linked_lists/07_linked_lists.pdf)                 | 02/03, 03/03, 09/03, 10/03, 11/03, 12/03, 16/03 | 6.5      | Chap 9 AMP         |
 | 08       | [Queues and Stacks]({{site.baseurl}}/lectures/08_queues_and_stacks/08_queues_and_stacks.pdf)            | 16/03, 17/03, 18/03, 19/03, 24/03, 25/03, 26/03 | 6.0             | Chap 10 & 11 AMP   |
 | 09       | [Effect Handlers]({{site.baseurl}}/lectures/09_effect_handlers/09_effect_handlers.pdf)              | 26/03, 30/03, 01/04, 02/04, 06/04 | 5.5 |  * [Effect Handlers in OCaml](https://ocaml.org/manual/5.4/effects.html) <br/> * Chap 10 CS[^2] |
-| 10       | [Lightweight Concurrency]({{site.baseurl}}/lectures/10_lightweight_concurrency/10_lightweight_concurrency.pdf)      | 07/04, 08/04, 09/04 | 3.0 | Chap 10 CS |
+| 10       | [Lightweight Concurrency]({{site.baseurl}}/lectures/10_lightweight_concurrency/10_lightweight_concurrency.pdf)      | 07/04, 08/04, 09/04, 15/04, 16/04 | 5.0 | Chap 10 CS |
 
-## Quiz dates
+**Total lecture hours so far: 46.0**
 
-| Quiz | Date       |
+## Important dates
+
+| Event | Date       |
 |-------------|------------|
 | Short Quiz 01          | 02/02/2026 |
 | Short Quiz 02          | 16/02/2026 |
 | Midsem | 05/03/2026 |
 | Short Quiz 03 | 12/03/2026 |
 | Short Quiz 04 | 26/03/2026 |
+| Short Quiz 05 | 09/04/2026 |
+| Short Quiz 06 | 22/04/2026 |
+| Project submission | 29/04/2026 |
 
 ## Footnotes
 
