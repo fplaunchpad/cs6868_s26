@@ -1,0 +1,211 @@
+\documentclass[11pt,a4paper]{article}
+
+% -----------------------------------------------------------------------------
+% CS6868 Research Mini-Project Report Template
+% -----------------------------------------------------------------------------
+% Target length: 5-10 pages (including figures, excluding references).
+% Compile with: latexmk -pdf main.tex
+% -----------------------------------------------------------------------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+% --- Listings style (for code snippets) ---------------------------------------
+\definecolor{codegray}{gray}{0.95}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codegray},
+  frame=single,
+  framesep=4pt,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+}
+
+% --- Title block --------------------------------------------------------------
+\title{%
+  \textbf{CS6868 Research Mini-Project} \\[0.3em]
+  \Large Your Project Title Here%
+}
+\author{%
+  Member One \\ \texttt{rollno1@smail.iitm.ac.in}
+  \and
+  Member Two \\ \texttt{rollno2@smail.iitm.ac.in}
+  \and
+  Member Three \\ \texttt{rollno3@smail.iitm.ac.in}
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Briefly (150--200 words) describe the problem you tackled, your approach, the
+headline evaluation results, and the main conclusion. Readers (the graders)
+should understand the essence of your project from the abstract alone.
+\end{abstract}
+
+% =============================================================================
+\section{Goals}
+\label{sec:goals}
+% =============================================================================
+
+State the goals of the project. What concurrent algorithm or data structure
+did you implement? Why is it interesting? How does it connect to course
+topics (cite the relevant lecture(s) from the course)?
+
+End this section with a crisp statement of your \emph{research question}
+(borrowed from or adapted from the chosen project idea in
+\texttt{project\_ideas.md}, or formulated by you if you proposed your own
+topic).
+
+% =============================================================================
+\section{Background}
+\label{sec:background}
+% =============================================================================
+
+Summarise the algorithm or technique at a level that a classmate who has
+attended the lectures but not read the paper can follow. Cite the primary
+references~\cite{example}. If helpful, include a small figure or
+pseudo-code listing.
+
+% Example listing:
+% \begin{lstlisting}[language=caml,caption={Sketch of the algorithm.},label={lst:algo}]
+% let foo x = ...
+% \end{lstlisting}
+
+% =============================================================================
+\section{Tasks Undertaken}
+\label{sec:tasks}
+% =============================================================================
+
+Describe what you actually built. Organise this section as sub-sections per
+major task; use the \emph{Tasks} list from the project idea as a checklist.
+
+\subsection{Implementation}
+Describe the implementation: key data structures, atomic operations used,
+subtle invariants, and any design choices you had to make. Link to the
+relevant files/commits in your GitHub repository.
+
+\subsection{Testing and verification}
+Describe how you tested correctness (QCheck-Lin, QCheck-STM, dscheck, TSAN,
+etc.) and what bugs the tests caught.
+
+% =============================================================================
+\section{Evaluation}
+\label{sec:evaluation}
+% =============================================================================
+
+Describe your experimental setup (hardware, number of domains/threads, how
+you measured, how many runs, how you handled warm-up and noise). Present
+results with plots or tables.
+
+% Example figure:
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{figures/throughput.pdf}
+%   \caption{Throughput vs. threads under the balanced workload.}
+%   \label{fig:throughput}
+% \end{figure}
+
+Discuss what the numbers \emph{mean}. Where did the algorithm scale well?
+Where did it break down? Did the results match your prior expectations?
+
+% =============================================================================
+\section{Reflection on the Use of LLMs}
+\label{sec:llm}
+% =============================================================================
+
+% This section is required and is graded as part of the report. Be specific
+% and honest -- we are more interested in what you learned from working with
+% the LLM than in a polished narrative.
+
+\paragraph{Tools and models used.}
+List every LLM-backed tool you used (e.g., GitHub Copilot, ChatGPT, Claude,
+Gemini, Cursor), the specific model version where relevant
+(e.g., \emph{GPT-5}, \emph{Claude Sonnet 4.6}, \emph{Gemini 2.5 Pro}), and
+roughly for what --- code generation, debugging, explaining a paper, writing
+test cases, drafting prose, generating plots, etc.
+
+\paragraph{What worked well.}
+Concrete examples where the LLM genuinely accelerated your work. Did it
+correctly implement a subtle CAS loop on the first try? Did it explain a
+paper better than the paper did? Did it catch a race you had missed? Cite
+specific commits or passages if you can.
+
+\paragraph{What did not work.}
+Concrete examples where the LLM got it wrong or led you astray --- wrong
+memory ordering, subtly broken retry logic, confident but incorrect
+explanations, hallucinated API calls, plausible-looking citations that did
+not exist, etc. How did you catch the mistake?
+
+\paragraph{What was surprising.}
+Anything you did not expect --- both positive (unexpectedly good at X) and
+negative (unexpectedly bad at Y). Differences between models or tools?
+
+\paragraph{What was difficult.}
+Parts of the project where the LLM was \emph{unable to substitute for
+understanding} --- reasoning about memory models, debugging a rare
+interleaving, justifying linearisation points, choosing between design
+alternatives. What did you end up having to learn yourself?
+
+\paragraph{Your overall assessment.}
+One or two sentences: did the LLM net help or hurt this project? Would you
+use it the same way again?
+
+% =============================================================================
+\section{Conclusions}
+\label{sec:conclusions}
+% =============================================================================
+
+Answer the research question stated in \cref{sec:goals}. Summarise the main
+findings. State the limitations of your work honestly. Suggest what you
+would do next given more time.
+
+% =============================================================================
+\section*{Contributions}
+\label{sec:contributions}
+% =============================================================================
+
+% Required. Percentages must sum to 100. Every member should contribute.
+
+\begin{center}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Member} & \textbf{Contribution (\%)} & \textbf{Main responsibilities} \\
+\midrule
+Member One   & 34\% & e.g., lock-free implementation, QCheck-Lin tests \\
+Member Two   & 33\% & e.g., baseline implementations, benchmarking harness \\
+Member Three & 33\% & e.g., evaluation plots, report, literature survey \\
+\midrule
+\textbf{Total} & \textbf{100\%} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\bibliographystyle{plainurl}
+\bibliography{references}
+% =============================================================================
+
+\end{document}

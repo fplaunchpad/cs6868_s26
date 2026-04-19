@@ -60,9 +60,12 @@ original work.**
 
 ### Research Mini Project (Groups of 3)
 
-- The research mini project is done in **groups of 3**.
+- The research mini project is done in **groups of 3**. See the
+  [project directory](https://github.com/{{site.githubdir}}/tree/main/project)
+  for deliverables, grading rubric, project ideas, and the LaTeX report
+  template.
 - **You may use LLMs** for the research mini project—they make you productive when exploring research problems.
-- You must cite any AI tools or external sources you use, and clearly indicate what parts of your work were influenced by them.
+- You must cite any AI tools or external sources you use, and clearly indicate what parts of your work were influenced by them. The report must include a dedicated reflection on your LLM use.
 - You are still responsible for understanding and being able to explain all submitted work.
 
 ### Consequences

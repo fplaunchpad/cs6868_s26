@@ -1,63 +1,19 @@
-# Research Mini-Projects
+# Project Ideas
 
-The research mini-project is worth **16%** of the final grade and is done in
-groups of **3**. The project should involve implementing a concurrent algorithm
-or data structure that is **not discussed in class** but is related to the course
-objectives. The implementation language is flexible — it need not be OCaml 5.
+See [`README.md`](README.md) for deliverables, grading rubric, important
+dates, and rules around LLM use. This file lists the 27 suggested project
+topics. The ideas below use OCaml 5 as the implementation language, but you
+may adapt them to another language or propose an entirely different project
+(subject to instructor approval — open a PR against this file).
 
-### Use of LLMs
+Each idea is described using:
 
-You are expected to use LLMs (e.g., GitHub Copilot, ChatGPT) as part of your
-workflow. We strongly recommend signing up for [GitHub Copilot for
-Education](https://docs.github.com/en/copilot/managing-copilot/managing-copilot-as-an-individual-subscriber/managing-your-copilot-subscription/getting-free-access-to-copilot-as-a-student-teacher-or-maintainer),
-which is free for students.
+- **Background** — motivation and connection to course topics
+- **Tasks** — concrete implementation, testing, and evaluation steps
+- **Research question** — the central question your project should answer
+- **References** — starting points
 
-**However:** while an LLM may generate code, **you are responsible for every
-line it produces.** You must review and understand all LLM-generated code before
-submitting it. During the presentation or Q&A, an answer of *"the LLM generated
-it, I don't know what it does"* will receive the lowest marks possible.
-
-### Deliverables
-
-Every project must produce three deliverables:
-
-1. **Implementation** — working code for a concurrency problem not covered in
-   lectures, with tests and/or evaluation demonstrating correctness and
-   performance.
-2. **Written report** — 5–10 pages, LaTeX (template will be shared). The report
-   should cover: goals of the project, tasks undertaken, evaluation, and
-   conclusions. The report **must** list the contributions of each group member
-   in terms of percentages.
-3. **Presentation** — 10-minute presentation + Q&A. Only one group member needs
-   to present.
-
-Code and report must be submitted as a single GitHub repository. The report
-must be written in LaTeX, Markdown, or another open, machine-readable format.
-
-### Grading Rubric (out of 16 marks)
-
-| Component | Marks | What we look for |
-|---|---|---|
-| Challenge of the problem undertaken | 3 | Ambition, novelty, relevance to course topics. Each project below has a difficulty rating (★ to ★★★★★). **Higher-difficulty projects receive higher marks in this component even if completion is partial.** |
-| Progress made towards the challenge | 5 | Working implementation, depth of evaluation, evidence of effort |
-| Written report | 5 | Clarity, technical depth, proper evaluation, contribution breakdown |
-| Presentation | 3 | Clear explanation, good use of time, ability to answer questions |
-
-### Important Dates
-
-| Task | Date |
-|---|---|
-| Project topic approval | 30/03/2026 |
-| Report & code submission | 26/04/2026 |
-| Presentation | Week of 27/04/2026 |
-
-Fill in your group members and chosen project topic in the
-[sign-up sheet](https://docs.google.com/spreadsheets/d/1kINa3ipNcyxAqh1wXC9_65xeZg25QFDirSUEqUU3IyA/edit?gid=0#gid=0)
-by the topic approval deadline.
-
----
-
-## Project Ideas
+## Index
 
 1. [MCS and CLH Queue Locks](#project-1-mcs-and-clh-queue-locks)
 2. [Concurrent Linked Lists — From Fine-Grained Locking to Lock-Free](#project-2-concurrent-linked-lists--from-fine-grained-locking-to-lock-free)
@@ -86,17 +42,6 @@ by the topic approval deadline.
 25. [Practical Lock-Free to Wait-Free Transformation](#project-25-practical-lock-free-to-wait-free-transformation)
 26. [Left-Right — A Concurrency Control Alternative to Reader-Writer Locks](#project-26-left-right--a-concurrency-control-alternative-to-reader-writer-locks)
 27. [Allocation-Free Semi-Space GC for a C Runtime Using OxCaml Allocation-Free Semantics](#project-27-allocation-free-semi-space-gc-for-a-c-runtime-using-oxcaml-allocation-free-semantics)
-
-Below are suggested project ideas. You are free to propose your own topic
-(subject to instructor approval). If you are presenting a new project topic,
-make a PR to this file. The ideas below use OCaml 5 as the
-implementation language, but you may adapt them to another language or propose
-an entirely different project. Each idea is described using:
-
-- **Background** — motivation and connection to course topics
-- **Tasks** — concrete implementation, testing, and evaluation steps
-- **Research question** — the central question your project should answer
-- **References** — starting points
 
 ---
 
