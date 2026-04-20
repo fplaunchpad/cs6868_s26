@@ -1,0 +1,21 @@
+; Library: fiber-level Mutex, Condition, Semaphore, Barrier.
+; Stubbed solution — warnings relaxed so the template compiles even
+; when the bodies are all [failwith "Not implemented"].
+(library
+ (name sync_prim)
+ (wrapped false)
+ (modules Mutex Condition Semaphore Barrier)
+ (libraries golike_unicore_select)
+ (flags (:standard -open Golike_unicore_select -w -26-27-32-33-39)))
+
+(executable
+ (name test_manual)
+ (modules test_manual)
+ (libraries sync_prim golike_unicore_select)
+ (flags (:standard -open Golike_unicore_select -w -26-27-32-33)))
+
+(executable
+ (name qcheck_stm_mutex)
+ (modules qcheck_stm_mutex)
+ (libraries sync_prim golike_unicore_select qcheck-stm.sequential)
+ (flags (:standard -w -27)))
