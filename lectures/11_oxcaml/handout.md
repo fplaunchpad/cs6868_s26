@@ -312,15 +312,31 @@ itself uses `exclave_` to do the work.
 
 Look back at `distance`. It takes two `local` points and returns a
 `float`. The result escapes the function freely — no `exclave_`
-needed. Why? Because `float` (like `int` and `bool`) is immediate: the
-value lives in a register, not on the heap. Locality is irrelevant for
-something that doesn't allocate.
+needed. The intermediates were local, but `Float.sqrt` allocates its
+output fresh, so distance hands the caller a clean global `float`.
 
-This is called **mode crossing**: types that don't involve heap
-allocation cross the locality axis freely. We rely on this for the
-running example — `distance` is a "local in, global out" function,
-which is exactly what we need to compute a path length and return the
-answer to global code.
+For some types the story is even cleaner. **`int` and `bool` "mode-cross"
+locality**: they live in a register, not on the heap, so a `local`
+int can be silently used wherever a `global` int is expected:
+
+```ocaml
+# let bump (x @ local) : int = x + 1;;
+val bump : int @ local -> int = <fun>
+```
+
+Read the signature: `int @ local -> int` — local input, global output.
+The compiler accepts the locality coercion because `int` doesn't carry
+any heap-allocated baggage that could dangle.
+
+Boxed `float` in standard OCaml does *not* mode-cross locality (try
+`let f (x @ local) : float = x` and you get `float @ local -> float @ local`).
+OxCaml's unboxed `float#` does — we'll see that in Part 6.
+
+This is called **mode crossing**: when a type carries no evidence for
+a particular mode axis, values can be used at any mode along that
+axis. `distance`'s "local in, global out" pattern works because of
+the fresh allocation in `Float.sqrt`; the integer family achieves the
+same effect with no allocation at all.
 
 We can build up a multi-segment computation with the same property:
 
