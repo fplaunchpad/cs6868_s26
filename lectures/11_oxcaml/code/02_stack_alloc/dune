@@ -1,3 +1,9 @@
 (executables
  (names stack_alloc local_regions)
+ (modules stack_alloc local_regions)
  (ocamlopt_flags (:standard -extension-universe alpha)))
+
+; part1_polyline.ml compiles clean; the two part1_escape_*.ml files
+; are intentionally rejected by the type checker (used to demo the
+; escape errors in Part 1 of the lecture). All three are slide source
+; only and are excluded from the build via (modules) above.
