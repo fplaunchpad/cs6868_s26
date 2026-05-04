@@ -259,14 +259,15 @@ Error: This value is local
        Hint: Use exclave_ to return a local value.
 ```
 
-Or tried to stash one in a global mutable cell:
+Or tried to stash one in a long-lived top-level mutable cell:
 
 ```ocaml
+# let storage : point ref = ref { x = 0.0; y = 0.0 };;
+val storage : point ref = {contents = {x = 0.; y = 0.}}
 # let store_local () =
     let p = stack_ { x = 1.0; y = 2.0 } in
-    let r = ref p in
-    !r;;
-Line 3, characters 17-18:
+    storage := p;;
+Line 3, characters 16-17:
 Error: This value is local
        because it is stack_-allocated.
        However, the highlighted expression is expected to be global.
