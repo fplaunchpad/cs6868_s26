@@ -366,9 +366,12 @@ A polyline of arbitrary length is naturally a `point list`. The
 is a list whose cons cells *and* whose points all live in the current
 region.
 
-For operations that *build* a new local list — say, translating every
-point of a polyline by some offset — every cons must be allocated in
-the **caller's** region, so we wrap the result in `exclave_`:
+More striking: we can *build* an entirely new list — a translated
+copy of the polyline — without ever touching the heap. In standard
+OCaml, `List.map (fun p -> translate p dx dy) poly` would allocate
+n new cons cells and n new points on the heap. With OxCaml's local
+lists and `exclave_`, the same shape places every allocation in the
+**caller's** region:
 
 ```ocaml
 # let rec translate_polyline (poly : point list @ local) dx dy
@@ -383,8 +386,9 @@ val translate_polyline :
 
 Notice the recursion sits *inside* the `exclave_`: each cons cell —
 including the one built from the recursive result — is allocated in
-the caller's region. This is exactly the shape of the zero-allocation
-merge sort we'll see in Part 6.
+the caller's region. A brand-new list of n points, no heap traffic.
+This is exactly the shape of the zero-allocation merge sort we'll
+see in Part 6.
 
 We can hold the compiler to the no-allocation claim with the
 `[@zero_alloc]` attribute (Part 6 uses it heavily). Tagged on
