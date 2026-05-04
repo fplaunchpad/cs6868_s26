@@ -11,7 +11,9 @@ exec ocaml -extension-universe alpha "\$@"
 SCRIPT
 chmod +x "$WRAP/ocaml"
 rm -f "$DIR/handout.md.corrected"
-PATH="$WRAP:$PATH" ocaml-mdx test "$DIR/handout.md"
+PATH="$WRAP:$PATH" ocaml-mdx test \
+  --prelude-str='[@@@alert "-do_not_spawn_domains"]' \
+  "$DIR/handout.md"
 if [ -f "$DIR/handout.md.corrected" ]; then
   echo "FAIL: mdx output differs from handout. See handout.md.corrected." >&2
   diff -u "$DIR/handout.md" "$DIR/handout.md.corrected" | head -80 >&2

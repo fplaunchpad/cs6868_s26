@@ -66,8 +66,25 @@ from Lecture 02:
 3. both write, ✅
 4. `count` is a plain `ref`, not atomic, ✅
 
-In Lecture 05 we'd run TSAN and watch it report the race. Our standard
-fix is `Atomic.fetch_and_add`:
+In Lecture 05 we'd run TSAN and watch it report the race. OxCaml does
+better: it refuses the program at compile time. Try to spawn `gensym`
+on another domain and the type checker stops you cold:
+
+```ocaml
+# let _ = Domain.Safe.spawn (fun () -> gensym "x");;
+Line 1, characters 38-44:
+Error: The value gensym is nonportable but is expected to be portable
+       because it is used inside the function at Line 1, characters 27-49
+       which is expected to be portable.
+```
+
+`Domain.Safe.spawn` requires a **portable** closure — one that's safe
+to run on another domain. Our `gensym` captures a mutable `ref` and is
+therefore `nonportable`. No test run, no race detector, no production
+incident — the compiler rejects the spawn before any thread is even
+created.
+
+Our standard runtime fix is `Atomic.fetch_and_add`:
 
 ```ocaml
 # let gensym_atomic =
@@ -77,6 +94,9 @@ fix is `Atomic.fetch_and_add`:
       prefix ^ "_" ^ string_of_int n;;
 val gensym_atomic : string -> string = <fun>
 ```
+
+`Atomic.t` mode-crosses contention, so `gensym_atomic` *is* portable
+and `Domain.Safe.spawn` accepts it.
 
 This works because the operation fits in one atomic word. But what about
 the data structures from Lectures 07–08 — linked lists, hash tables,
