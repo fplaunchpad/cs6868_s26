@@ -554,8 +554,9 @@ You can't extract an `uncontended` component from a `contended` container.
 ### The Portability Axis: `portable` vs `nonportable`
 
 Portability tracks whether a value can safely **cross domain boundaries**.
-This attacks ingredient 1 of data races: if a value can't reach another
-domain, it can't participate in a race.
+This attacks ingredient 2 of a data race: if a value can't reach
+another domain, the other domain can't access it, and there's no
+"shared memory location" for the race to happen on.
 
 A `portable` function is one that can be safely called from any domain.
 The critical constraint: **inside a `portable` function, all captured
