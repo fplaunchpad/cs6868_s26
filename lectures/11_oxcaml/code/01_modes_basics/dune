@@ -1,3 +1,8 @@
 (executables
  (names modes_demo)
+ (modules modes_demo)
  (ocamlopt_flags (:standard -extension-universe alpha)))
+
+; gensym_unsafe.ml and gensym_atomic.ml are intentionally rejected by
+; the type checker (used to demo Domain.Safe.spawn rejecting nonportable
+; closures); they are excluded from the build via (modules) above.
