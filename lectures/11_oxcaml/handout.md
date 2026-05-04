@@ -18,23 +18,31 @@ OxCaml program. The extensions are opt-in.
 This lecture revisits problems we've already encountered and shows how
 OxCaml's type system turns runtime conventions into compile-time guarantees:
 
-- **Lecture 02 (Mutual Exclusion)**: we protected shared state with
-  `Mutex.lock`/`Mutex.unlock`. Forget the lock and you get a data race the
-  compiler can't see. OxCaml's **contention** mode prevents this statically.
-- **Lecture 04 (Memory Consistency)**: atomics let us share simple values
-  safely. OxCaml's `Atomic.t` is the same primitive — what's new is that
-  the type system enforces *which* values must be atomic.
-- **Lecture 05 (Spinlocks)**: we used TSAN to *detect* races dynamically.
-  OxCaml rejects them at the *type-checking* stage — no test run required.
-- **Lecture 06 (Monitors)**: a monitor bundles data with its lock by
-  convention. **Capsules** make the bundling structural — you literally
-  cannot reach the data without holding the lock.
-- **Lectures 07–08 (Linked Lists, Queues)**: hand-over-hand locking and
-  lock-free protocols rely on careful reasoning about who owns what. Modes
-  give the compiler the vocabulary to track this.
-- **Lectures 09–10 (Effect Handlers, Lightweight Concurrency)**: fiber
-  schedulers heap-allocate state on every switch. OxCaml's stack-allocated
-  data and `let mutable` lets us avoid that allocation entirely.
+- **Lecture 02 (Mutual Exclusion)** → **contention** mode. We protected
+  shared state with `Mutex.lock`/`Mutex.unlock`; forget the lock and you
+  get a race the compiler can't see. The contention mode (`uncontended`
+  / `contended`) prevents this statically.
+- **Lecture 04 (Memory Consistency)** → **contention** mode + mode
+  crossing. Atomics let us share simple values safely. OxCaml's
+  `Atomic.t` mode-crosses contention — its whole purpose is to be
+  shared across domains, and the type system enforces it.
+- **Lecture 05 (Spinlocks)** → **portability** + **contention**. We used
+  TSAN to *detect* races dynamically. The two modes together make race
+  freedom a type-checking job — no test run required.
+- **Lecture 06 (Monitors)** → **contention** + a brand-based `access`
+  token. A monitor bundles data with its lock by convention. Capsules
+  make the bundling structural — the access token is required to read
+  the data, and is only granted inside the critical section.
+- **Lectures 07–08 (Linked Lists, Queues)** → **uniqueness** +
+  **linearity** modes. Hand-over-hand locking and lock-free protocols
+  rely on careful reasoning about who owns what. `unique` tracks past
+  aliasing; `once` tracks future use — together they let the compiler
+  enforce ownership disciplines that were previously programmer
+  conventions.
+- **Lectures 09–10 (Effect Handlers, Lightweight Concurrency)** →
+  **locality** mode. Fiber schedulers heap-allocate state on every
+  switch. `local` / `stack_` / `exclave_` (plus `let mutable` and
+  unboxed types) put that state on the stack instead.
 
 ### Motivating Example: The Gensym Race
 
