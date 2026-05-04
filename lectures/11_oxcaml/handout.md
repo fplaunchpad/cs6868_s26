@@ -940,18 +940,28 @@ val once_to_many : unit -> unit = <fun>
 
 ### The Full Mode Picture
 
-Here are all the modal axes together:
+Five axes, each independent. For each: the modes in submoding order,
+the default at top level, and what it tracks.
 
-| Axis | Restrictive | Permissive | Controls |
-|------|-------------|------------|----------|
-| Locality | `local` | `global` | Can the value escape its scope? |
-| Portability | `portable` | `nonportable` | Can it cross domain boundaries? |
-| Contention | `uncontended` | `contended` | Is it accessed by multiple domains? |
-| Uniqueness | `unique` | `aliased` | Has it been aliased? |
-| Linearity | `once` | `many` | Can it be used multiple times? |
+| Axis | Modes (`⊑`) | Default | What it tracks |
+|---|---|---|---|
+| **Locality** | `global` ⊑ `local` | `global` | Can the value escape its scope? |
+| **Contention** | `uncontended` ⊑ `shared` ⊑ `contended` | `uncontended` | Can multiple domains safely access it? |
+| **Portability** | `portable` ⊑ `nonportable` | `nonportable` | Can it cross domain boundaries? |
+| **Uniqueness** | `unique` ⊑ `aliased` | `aliased` | Has it been aliased? |
+| **Linearity** | `many` ⊑ `once` | `many` | Can it be used multiple times? |
 
-Each axis tracks a different aspect of *how* a value is used. The compiler
-checks all axes simultaneously, giving you:
+`A ⊑ B` means a value at mode `A` can be used wherever mode `B` is
+expected — `A` carries more guarantees and `B` is the looser
+expectation. So a `global` ref satisfies a `@ local` parameter, a
+`unique` reference satisfies an `@ aliased` parameter, a `many`
+function satisfies a `@ once` callback slot, and so on. Submoding
+goes one way only: an `aliased` value cannot be used where `unique`
+is required.
+
+Each axis tracks a different aspect of *how* a value is used. The
+compiler checks all five simultaneously, giving you:
+
 - Stack allocation safety (locality)
 - Data-race freedom (portability + contention)
 - Resource safety (uniqueness + linearity)
