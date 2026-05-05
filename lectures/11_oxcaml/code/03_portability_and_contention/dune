@@ -1,4 +1,5 @@
 (executables
  (names portability_demo)
+ (modules portability_demo)
  (libraries parallel parallel.scheduler)
  (ocamlopt_flags (:standard -extension-universe alpha)))

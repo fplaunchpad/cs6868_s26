@@ -390,6 +390,34 @@ the caller's region. A brand-new list of n points, no heap traffic.
 This is exactly the shape of the zero-allocation merge sort we'll
 see in Part 6.
 
+It's worth pausing on what the inner call to `translate p dx dy`
+does. `translate` itself ends with `exclave_`, so it allocates its
+fresh point in *its* caller's region. Its caller here is
+`translate_polyline` — but `translate_polyline`'s own region has
+already been ended by the outer `exclave_`, so the active region at
+that call site is `translate_polyline`'s caller's region. The new
+point therefore lands in the same region as the cons cell wrapping
+it. Exclaves chain through *function calls*: each recursive frame
+exclaves into its parent, the parent is itself an exclave-frame,
+and so on, until the whole spine collapses into the one outermost
+non-exclaving caller's region.
+
+You cannot stack the keyword to skip levels — `exclave_ (exclave_ e)`
+is a compile error:
+
+```text
+Error: Exclave expression should only be in tail position of the
+current region.
+```
+
+A function has exactly one region. `exclave_` ends it and runs the
+body in the parent's region; after that, there is no region of
+*yours* left to end. It also must sit in tail position, since the
+implementation pops your region marker before evaluating the body —
+anything after would allocate into a region that no longer exists.
+The only way to reach a grandparent region is for an intermediate
+function to itself be an exclave-frame.
+
 We can hold the compiler to the no-allocation claim with the
 `[@zero_alloc]` attribute (Part 6 uses it heavily). Tagged on
 `translate_polyline`, it passes verification at `-O3`:
@@ -564,6 +592,17 @@ values from the outer scope are treated as `contended`**. This is because
 if the function runs on another domain, the captured values might be
 simultaneously accessed by the original domain.
 
+Note carefully the word *captured*. Portability restricts only what the
+closure pulls in from its enclosing scope; it does **not** downgrade
+parameters. A parameter is supplied fresh at each call, so it can be
+used at whatever mode its annotation declares — even
+`@ uncontended` — without violating portability. This split matters
+later when we hand closures to a parallel API: the closure itself
+must be `portable` (so its captures are safe), but the API can still
+pass it an `uncontended` token through a parameter. We'll come back
+to a worked example of this in the "Captured Values vs Parameters"
+subsection below.
+
 Let's see this concretely:
 
 ```ocaml
@@ -607,12 +646,15 @@ t.mood <- Happy             t.mood <- Sad      ← DATA RACE!
 
 The mode system prevents this with a two-step argument:
 
-1. **Portability** ensures that closures passed to `fork_join2` are
-   `portable`, meaning they treat captured values as `contended`
+1. **Portability** ensures that closures crossing a domain boundary
+   are `portable`, meaning they treat captured values as `contended`
 2. **Contention** ensures that `contended` values can't have their
    mutable fields read or written
 
-Together, these two rules make data-race freedom a compile-time guarantee.
+Together, these two rules make data-race freedom a compile-time
+guarantee. Part 4 will show the actual parallel primitive
+(`Parallel.fork_join2`) that enforces the portability requirement at
+its boundary.
 
 ### Captured Values vs Parameters
 
@@ -641,40 +683,52 @@ Instead, `a` is passed as a parameter annotated `@ uncontended`. The
 function can safely mutate `a` because it received it as a parameter, not
 by capturing it.
 
-This distinction is crucial for understanding `fork_join2`: the closures
-you pass are `portable`, but the `par` parameter they receive is not
-captured — it's passed in fresh.
+This distinction will matter in Part 4: the closures you hand to a
+parallel primitive must be `portable`, but the parameters they
+receive (such as a `par` token) are not captured — they're passed in
+fresh, so they can carry whatever mode the API specifies.
 
 ### Putting It Together: A First Working Parallel Program
 
-Enough rejections. Here is a complete program that the type checker
-*accepts*: two domains incrementing a shared counter 1000 times each,
-then joining and reading the result. The trick we already saw with
-`gensym_atomic_portable.ml` — defining the state inside a function so
-its captures are portable — is enough to satisfy `Domain.Safe.spawn`:
+Enough rejections. Time to close the loop on the motivating example.
+Recall: the top-level `gensym` was nonportable because it captured a
+mutable `ref`; even `gensym_atomic` was still nonportable because
+stdlib `Atomic.t` mode-crosses contention but not portability. The
+right fix is `Portable.Atomic` — its `t` mode-crosses **both**
+axes, so a closure capturing it can itself be marked `@ portable`.
+We define `gensym` by hiding `count` in an inner `let`, annotating
+the returned closure `@ portable`, then use it directly at the top
+level — both the spawn and the main-domain call live outside any
+wrapper:
 
-```ocaml
-# let parallel_counter () =
-    let count = Atomic.make 0 in
-    let bump_n n =
-      for _ = 1 to n do
-        ignore (Atomic.fetch_and_add count 1)
-      done
-    in
-    let d = Domain.Safe.spawn (fun () -> bump_n 1000) in
-    bump_n 1000;
-    Domain.join d;
-    Atomic.get count;;
-val parallel_counter : unit -> int = <fun>
-# parallel_counter ();;
-- : int = 2000
+```ocaml skip
+open Portable
+
+let gensym =
+  let count = Atomic.make 0 in
+  let res @ portable = fun prefix ->
+    let n = Atomic.fetch_and_add count 1 in
+    prefix ^ "_" ^ string_of_int n
+  in
+  res
+
+let d = Domain.Safe.spawn (fun () -> gensym "y")
+let s1 = gensym "x"
+let s2 = Domain.join d
+let () = Printf.printf "%s %s\n" s1 s2
+(* prints: x_0 y_1 *)
 ```
 
-Two domains, a shared `Atomic.t` counter, no race — and the compiler
-verified all of that before we ran it. The body of the spawned closure
-is `portable`; its captures (`count`, `bump_n`) are at modes that
-satisfy the portability check; `Atomic.t` mode-crosses contention so
-both domains can hammer on it.
+Two domains, a shared atomic counter, no race — and the compiler
+verified all of that before we ran it. The `@ portable` annotation on
+`res` forces the proof: each capture must mode-cross portability,
+which `Portable.Atomic.t` does. `count` is created once when `gensym`
+is bound — the inner `let` runs at module load, not on each call —
+and is shared by every invocation across every domain. The closure
+handed to `Domain.Safe.spawn` then captures only `gensym` (portable)
+and nothing else. This is the same `gensym` that the opener
+rejected — swap stdlib `Atomic` for `Portable.Atomic` and add
+`@ portable`, and it type-checks.
 
 This is the smallest interesting parallel program we can write. For
 real workloads we want **structured** parallelism — divide and
@@ -1235,10 +1289,13 @@ discipline:
 open Await
 
 let gensym =
-  let (P mutex) = Capsule.Mutex.create () in
+  (* `P mutex` introduces a fresh existential brand $k tied to this mutex *)
+  let (P mutex) = Await_capsule.Mutex.create () in
+  (* `counter` is the only handle to the inner ref, branded $k *)
   let counter = Capsule.Data.create (fun () -> ref 0) in
   let fetch_and_incr (w : Await.t) =
-    Capsule.Mutex.with_lock w mutex ~f:(fun access ->
+    (* with_lock hands the body a $k-branded `access` token *)
+    Await_capsule.Mutex.with_lock w mutex ~f:(fun access ->
       let c = Capsule.Data.unwrap ~access counter in
       incr c;
       !c)
@@ -1249,10 +1306,20 @@ let gensym =
 Read this carefully. The `counter` ref is created *inside* the capsule —
 it has no name in scope outside `Capsule.Data.create`. To touch it, we
 need to call `Capsule.Data.unwrap`, which **requires an `access` token**.
-The only way to obtain `access` is through `Capsule.Mutex.with_lock`,
+The only way to obtain `access` is through `Await_capsule.Mutex.with_lock`,
 which only hands it out for the duration of the critical section. There
 is no way to write the equivalent of "forgetting the lock" — the program
 simply does not type-check.
+
+The mechanism is an existential brand introduced by the `P` pattern when
+the mutex is created: each `let (P mutex) = Mutex.create ()` brings a
+fresh type variable into scope, and the `Capsule.Data.t` first unwrapped
+under that mutex gets pinned to that variable. A second mutex's brand is
+a *different* existential, and the type checker refuses to unify the
+two — so an `access` from one mutex cannot unwrap data branded by the
+other. (We'll see the actual error message below.) The `w : Await.t`
+parameter is just an awaiter — needed because acquiring a contended
+mutex may suspend the fiber.
 
 We can now use `gensym` from parallel branches:
 
@@ -1260,10 +1327,12 @@ We can now use `gensym` from parallel branches:
 let gensym_pair par =
   let #(s1, s2) =
     Parallel.fork_join2 par
-      (fun _ -> Await_blocking.with_await Terminator.never
-                  ~f:(fun w -> gensym w "x"))
-      (fun _ -> Await_blocking.with_await Terminator.never
-                  ~f:(fun w -> gensym w "x"))
+      (fun _par ->
+        let w = Await_blocking.await Terminator.never in
+        gensym w "x")
+      (fun _par ->
+        let w = Await_blocking.await Terminator.never in
+        gensym w "y")
   in
   assert (s1 <> s2)
 ```
@@ -1286,6 +1355,33 @@ This is the monitor pattern from Lecture 06 — but the bundling of
 This makes the lock discipline *structural* rather than *conventional*.
 You can't accidentally access the data without the lock, just as you
 can't accidentally add an int to a string.
+
+### Probing the API: Three Escape Hatches the Compiler Refuses
+
+It's worth pushing on the design to see why it's actually airtight. The
+companion file `code/08_capsules/capsule_abuse.ml` walks through three
+attempts and what the type checker says about each:
+
+1. **Leak the inner ref through a top-level atomic.** The *write* into
+   `Portable.Atomic.set` compiles — but anything inside a portable
+   atomic becomes `contended`, and dereferencing a `ref` on a contended
+   value is rejected (Part 2's contention rule). The alias is reachable
+   but its mutable interior is frozen.
+2. **One mutex protecting two `Capsule.Data.t`.** *Allowed*, and rightly
+   so — it's the equivalent of one mutex guarding two fields of a struct.
+   Both data values share the mutex's brand `$k`, and a single critical
+   section can read or write both.
+3. **Two mutexes for one `Capsule.Data.t`.** *Rejected.* This is the
+   genuinely unsound case (two threads holding distinct mutexes could
+   enter critical sections simultaneously). Each `P mutex` introduces a
+   fresh existential `$k`/`$k1`, and once the data is first unwrapped
+   under one brand, the second unwrap under the other brand cannot
+   unify. The compiler error literally says "`$k` and `$k1` are
+   existential types bound by the constructor `P`."
+
+Together, (1) and (3) close the two ways a clever programmer might
+hope to subvert the discipline; (2) shows the rule isn't gratuitously
+restrictive.
 
 ## Part 6: Performance Features
 
