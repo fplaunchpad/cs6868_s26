@@ -1,9 +1,10 @@
 open Golike_multicore_select
 
-(* Fan-in with select — known to be flaky under multicore scheduling.
-   Two senders on rendezvous channels, one receiver using select.
-   Under contention, a select may consume a value from one channel while
-   both senders race, leading to a lost wakeup / double-consume. *)
+(* Fan-in with select. Two senders on rendezvous channels, one
+   receiver using select. Each rendezvous send is matched 1:1 with a
+   recv inside select, so the receiver always observes exactly the
+   six values sent (sum = 660), regardless of how the four domains
+   interleave. *)
 let () =
   Printf.printf "=== Select fan-in ===\n";
   Sched.run ~num_domains:4 (fun () ->
