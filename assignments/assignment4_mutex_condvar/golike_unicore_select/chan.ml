@@ -9,8 +9,10 @@
     - When [select] is used, both [receivers] and [senders] may
       contain live entries on the {i same} channel (e.g. a select
       offering both [recv_evt ch] and [send_evt ch v]).  Stale entries
-      from lost select races are harmlessly skipped by
-      {!find_live_receiver} / {!find_live_sender}.
+      from lost select races are skipped by {!find_live_receiver} /
+      {!find_live_sender}, which undo any slot write before continuing
+      so the waiter's [Select.find_winner] cannot observe a partial
+      completion of a case it did not win.
     - Each trigger is signaled at most once.  Stale entries may linger
       in the queues and are harmlessly skipped. *)
 type 'a t = {
@@ -30,20 +32,25 @@ let make capacity =
   }
 
 (* [find_live_receiver receivers v] pops receivers until it finds one whose
-   trigger can be signaled (i.e. not a stale select waiter). *)
+   trigger can be signaled (i.e. not a stale select waiter).  If the signal
+   fails the waiter has already won a different case in its select; we must
+   undo the slot write so its [find_winner] does not see this stale [Some v]
+   and declare the wrong winner. *)
 let rec find_live_receiver receivers v =
   if Queue.is_empty receivers then false
   else
     let (slot, trigger) = Queue.pop receivers in
     slot := Some v;
     if Trigger.signal trigger then true
-    else find_live_receiver receivers v
+    else begin
+      slot := None;
+      find_live_receiver receivers v
+    end
 
 (* [find_live_sender senders] pops senders until it finds one whose trigger
-   can be signaled.  Writes [done_slot := Some ()] before signaling so
-   the waiter sees it as soon as it wakes.  If the signal fails (stale
-   select waiter), the slot write is harmless — nobody will read it —
-   and we continue to the next sender. *)
+   can be signaled.  As with [find_live_receiver], a failed signal means the
+   waiter lost its select race elsewhere; clear the slot so its [find_winner]
+   does not mis-identify this case as the winner. *)
 let rec find_live_sender senders =
   if Queue.is_empty senders then None
   else
@@ -51,8 +58,10 @@ let rec find_live_sender senders =
     done_slot := Some ();
     if Trigger.signal strigger then
       Some sv
-    else
+    else begin
+      done_slot := None;
       find_live_sender senders
+    end
 
 let send ch v =
   if find_live_receiver ch.receivers v then

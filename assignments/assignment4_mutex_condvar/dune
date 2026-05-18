@@ -15,6 +15,11 @@
  (flags (:standard -open Golike_unicore_select -w -26-27-32-33)))
 
 (executable
+ (name test_select_stale)
+ (modules test_select_stale)
+ (libraries golike_unicore_select))
+
+(executable
  (name qcheck_stm_mutex)
  (modules qcheck_stm_mutex)
  (libraries sync_prim golike_unicore_select qcheck-stm.sequential)
