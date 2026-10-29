@@ -11,11 +11,21 @@
  (modules lockfree_queue))
 
 (library
+ (name atomic_intf)
+ (modules atomic_intf))
+
+(library
+ (name backoff)
+ (modules backoff))
+
+(library
  (name lockfree_stack)
+ (libraries atomic_intf backoff)
  (modules lockfree_stack))
 
 (library
  (name lockfree_stack_builtin_list)
+ (libraries atomic_intf backoff)
  (modules lockfree_stack_builtin_list))
 
 (library

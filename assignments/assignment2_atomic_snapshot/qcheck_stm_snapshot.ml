@@ -50,7 +50,7 @@ let show_cmd = function
 (** Generate random commands *)
 let arb_cmd _state =
   QCheck.make ~print:show_cmd
-    (Gen.oneof_weighted [
+    (Gen.frequency [
       (3, Gen.map2 (fun idx value -> Update (idx, value))
             (Gen.int_range 0 3)  (* index 0-3 *)
             (Gen.int_range 0 99)); (* value 0-99 *)

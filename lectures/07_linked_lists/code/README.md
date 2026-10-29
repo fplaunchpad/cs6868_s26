@@ -17,14 +17,16 @@ The implementations form a progression from coarse-grained locking to lock-free,
 - **`lazy_list_racefree.ml`** — Race-free variant of the lazy list.
 - **`lockfree_list.ml`** — Lock-free list (Michael's algorithm). Uses `AtomicMarkableReference` to combine the mark bit and next pointer in a single atomic update. No locks at all.
 - **`atomic_markable_ref.ml`** — Helper module implementing `AtomicMarkableReference` (a reference + mark bit updated atomically), used by the lock-free list.
+- **`atomic_intf.ml`** — The atomic operations the lock-free list needs. `Lockfree_list.Make` and `Atomic_markable_ref.Make` are functors over it, so the same code runs on `Stdlib.Atomic` (the default `Lockfree_list` module) or on DSCheck's traced atomics.
 
 ### Tests (`test/`)
 
-Each implementation has up to three levels of testing:
+Each implementation has up to four levels of testing:
 
 - **`test_*.ml`** — Sequential and concurrent unit tests
 - **`qcheck_lin_*.ml`** — QCheck-Lin linearizability tests
 - **`qcheck_stm_*.ml`** — QCheck-STM state-machine tests against a sequential model
+- **`dscheck_*.ml`** — [DSCheck](https://github.com/ocaml-multicore/dscheck) model-checking tests. Instead of running threads and hoping for a bad schedule, DSCheck exhaustively explores every interleaving of a few concurrent operations. For it to see those interleavings, the implementation under test is instantiated with DSCheck's traced atomics via its `Make` functor (see `atomic_intf.ml`). Each file ends with a *negative* test that builds the same code on a deliberately non-atomic CAS and checks that DSCheck finds the resulting bug.
 
 ### Benchmarks (`benchmarks/`)
 
@@ -69,6 +71,9 @@ dune exec test/qcheck_stm_coarse_list.exe -- all
 dune exec test/qcheck_stm_fine_list.exe -- all
 dune exec test/qcheck_stm_lockfree_list.exe -- all
 
+# Run DSCheck model-checking tests
+dune exec test/dscheck_lockfree_list.exe
+
 # Run benchmarks
 cd benchmarks && bash run_benchmarks.sh
 ```
@@ -87,11 +92,13 @@ code/
 │   ├── lazy_list_racefree.ml/mli      # Race-free lazy
 │   ├── lockfree_list.ml/mli           # Lock-free (Michael's algorithm)
 │   ├── atomic_markable_ref.ml/mli     # AtomicMarkableReference helper
+│   ├── atomic_intf.ml                 # Atomic signature (Stdlib or DSCheck)
 │   └── dune
 ├── test/
 │   ├── test_*.ml                       # Unit tests
 │   ├── qcheck_lin_*.ml                 # Linearizability tests
 │   ├── qcheck_stm_*.ml                # State-machine tests
+│   ├── dscheck_*.ml                   # DSCheck model-checking tests
 │   └── dune
 ├── benchmarks/
 │   ├── benchmark_lists.ml              # Throughput benchmark
