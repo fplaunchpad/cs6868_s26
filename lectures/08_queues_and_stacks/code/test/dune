@@ -98,3 +98,12 @@
  (modules benchmark_queues)
  (libraries bounded_queue bounded_queue_split_counter lockfree_queue unix))
 
+(executable
+ (name dscheck_lockfree_stack)
+ (modules dscheck_lockfree_stack)
+ (libraries lockfree_stack dscheck))
+
+(executable
+ (name dscheck_lockfree_stack_usingBuiltinlist)
+ (modules dscheck_lockfree_stack_usingBuiltinlist)
+ (libraries lockfree_stack_builtin_list dscheck))

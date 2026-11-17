@@ -82,7 +82,10 @@
  (name qcheck_lin_lockfree_list)
  (modules qcheck_lin_lockfree_list)
  (libraries lockfree_list qcheck-lin.domain))
-
+(executable
+ (name dscheck_lockfree_list)
+ (modules dscheck_lockfree_list)
+ (libraries lockfree_list dscheck))
 (executable
  (name qcheck_stm_lockfree_list)
  (modules qcheck_stm_lockfree_list)

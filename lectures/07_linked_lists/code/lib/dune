@@ -26,6 +26,10 @@
  (name lockfree_list)
  (libraries atomic_markable_ref)
  (modules lockfree_list))
+ (library
+ (name buggy_lockfree_list)
+ (libraries atomic_markable_ref lockfree_list)
+ (modules buggy_lockfree_list))
 
 (library
  (name lazy_list_racefree)
